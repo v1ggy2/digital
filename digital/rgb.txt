@@ -1,0 +1,60 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 读取图像
+img_path = r'D:\2\IMG_5161.JPG'
+img = cv2.imread(img_path)
+
+# 检查图像是否成功加载
+if img is None:
+    print("图像未能成功加载，请检查文件格式。")
+else:
+    # 转换为RGB
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    # 提取R、G、B分量
+    r, g, b = cv2.split(img_rgb)
+
+    # 转换为HSI
+    img_hsi = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    h, s, i = cv2.split(img_hsi)
+
+    # 显示RGB和HSI分量图
+    plt.figure(figsize=(12, 6))
+    plt.rcParams['font.sans-serif'] = ['SimHei']  # 使用黑体
+    plt.rcParams['axes.unicode_minus'] = False  # 正确显示负号
+    # RGB分量图
+    plt.subplot(2, 4, 1)
+    plt.imshow(r, cmap='gray')
+    plt.title('R分量')
+    plt.axis('off')
+
+    plt.subplot(2, 4, 2)
+    plt.imshow(g, cmap='gray')
+    plt.title('G分量')
+    plt.axis('off')
+
+    plt.subplot(2, 4, 3)
+    plt.imshow(b, cmap='gray')
+    plt.title('B分量')
+    plt.axis('off')
+
+    # HSI分量图
+    plt.subplot(2, 4, 5)
+    plt.imshow(h, cmap='hsv')
+    plt.title('H分量')
+    plt.axis('off')
+
+    plt.subplot(2, 4, 6)
+    plt.imshow(s, cmap='gray')
+    plt.title('S分量')
+    plt.axis('off')
+
+    plt.subplot(2, 4, 7)
+    plt.imshow(i, cmap='gray')
+    plt.title('I分量')
+    plt.axis('off')
+
+    plt.tight_layout()
+    plt.show()

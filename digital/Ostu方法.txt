@@ -1,0 +1,63 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
+
+# 设置中文字体，以避免乱码
+rcParams['font.sans-serif'] = ['Microsoft YaHei']  # 设置中文字体为Microsoft YaHei
+rcParams['axes.unicode_minus'] = False  # 显示负号
+
+# 读取图像并转换为灰度图像
+img_path = r'D:\2\9a01751f08e660c380892628c01201b3.jpeg'
+image = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+# 使用Otsu方法进行二值化
+# Otsu方法需要通过指定阈值为0，告诉OpenCV自动计算阈值
+_, otsu_thresholded = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+# 显示结果
+plt.figure(figsize=(10, 8))
+
+plt.subplot(1, 2, 1), plt.imshow(image, cmap='gray'), plt.title('原始图像')
+plt.subplot(1, 2, 2), plt.imshow(otsu_thresholded, cmap='gray'), plt.title('Otsu分割结果')
+
+# 1. 使用Prewitt算子计算梯度图像
+prewitt_x = np.array([[-1, 0, 1],
+                      [-1, 0, 1],
+                      [-1, 0, 1]])
+
+prewitt_y = np.array([[-1, -1, -1],
+                      [ 0, 0, 0],
+                      [ 1, 1, 1]])
+
+# 计算梯度
+grad_x = cv2.filter2D(image, -1, prewitt_x).astype(np.float32)
+grad_y = cv2.filter2D(image, -1, prewitt_y).astype(np.float32)
+
+# 计算梯度幅值
+grad_magnitude = cv2.magnitude(grad_x, grad_y)
+
+# 2. 设定阈值T，这里我们设为图像的90%最大值
+T = np.percentile(grad_magnitude, 90)
+
+# 3. 根据T值产生模板图像，选取梯度大于T的区域
+template = grad_magnitude > T
+
+# 4. 计算仅在模板为1的位置的梯度图像的直方图
+masked_grad = grad_magnitude[template]
+histogram, bin_edges = np.histogram(masked_grad, bins=256, range=(0, 256))
+
+# 5. 使用Otsu方法对直方图进行全局分割
+otsu_threshold = cv2.threshold(masked_grad.astype(np.uint8), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[0]
+
+# 生成最终分割图像
+final_segmentation = grad_magnitude > otsu_threshold
+
+# 显示结果
+plt.figure(figsize=(12, 10))
+
+plt.subplot(1, 3, 1), plt.imshow(image, cmap='gray'), plt.title('原始图像')
+plt.subplot(1, 3, 2), plt.imshow(template, cmap='gray'), plt.title('基于边缘的模板图像')
+plt.subplot(1, 3, 3), plt.imshow(final_segmentation, cmap='gray'), plt.title('基于Otsu分割的结果')
+
+plt.show()

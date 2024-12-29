@@ -1,0 +1,41 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 设置中文字体为黑体，确保能正确显示中文（需根据实际系统情况调整字体路径，如果系统有默认支持的中文字体可直接写字体名称）
+plt.rcParams['font.sans-serif'] = ['SimHei']
+# 解决负号显示问题
+plt.rcParams['axes.unicode_minus'] = False
+
+# 读取图像并转换为灰度图像
+img_path = r'D:\2\2024-10-24 102920.jpg'
+image = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)  # 替换为实际图像路径
+
+# 1. 对图像进行傅里叶变换
+# 对图像进行二维傅立叶变换
+f = np.fft.fft2(image)
+fshift = np.fft.fftshift(f)  # 将零频率成分移到频谱中心
+
+# 2. 计算频谱图（对幅度取对数缩放以便显示）
+magnitude_spectrum = np.log(np.abs(fshift) + 1)  # 加1防止log(0)
+
+# 3. 显示频谱图
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 2, 1)
+plt.imshow(magnitude_spectrum, cmap='gray')
+plt.title('幅度频谱图')
+plt.colorbar()
+
+# 4. 进行逆傅立叶变换
+f_ishift = np.fft.ifftshift(fshift)  # 将频谱中心移回原点
+img_back = np.fft.ifft2(f_ishift)  # 进行逆傅里叶变换
+img_back = np.abs(img_back)  # 取逆变换结果的绝对值作为重建图像
+
+# 5. 显示重建后的图像
+plt.subplot(1, 2, 2)
+plt.imshow(img_back, cmap='gray')
+plt.title('重建图像（逆傅里叶变换）')
+plt.colorbar()
+
+plt.show()

@@ -1,0 +1,51 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
+
+# 设置中文字体，以避免乱码
+rcParams['font.sans-serif'] = ['Microsoft YaHei']  # 设置中文字体为Microsoft YaHei
+rcParams['axes.unicode_minus'] = False  # 显示负号
+
+# 读取图像并转换为灰度图
+img_path = r'D:\2\9a01751f08e660c380892628c01201b3.jpeg'
+image = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+# 定义Prewitt算子
+prewitt_x = np.array([[-1, 0, 1],
+                      [-1, 0, 1],
+                      [-1, 0, 1]])
+
+prewitt_y = np.array([[-1, -1, -1],
+                      [ 0, 0, 0],
+                      [ 1, 1, 1]])
+
+# 对图像进行卷积，计算梯度
+grad_x = cv2.filter2D(image, -1, prewitt_x)
+grad_y = cv2.filter2D(image, -1, prewitt_y)
+
+# 确保梯度的类型为float32
+grad_x = grad_x.astype(np.float32)
+grad_y = grad_y.astype(np.float32)
+
+# 计算梯度幅值
+grad_magnitude = cv2.magnitude(grad_x, grad_y)
+
+# 显示结果
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 3, 1), plt.imshow(image, cmap='gray'), plt.title('原始图像')
+plt.subplot(1, 3, 2), plt.imshow(grad_x, cmap='gray'), plt.title('水平方向梯度')
+plt.subplot(1, 3, 3), plt.imshow(grad_y, cmap='gray'), plt.title('垂直方向梯度')
+plt.figure(figsize=(6, 6))
+plt.imshow(grad_magnitude, cmap='gray'), plt.title('Prewitt边缘检测结果')
+plt.show()
+# 高斯平滑去噪
+smoothed_image = cv2.GaussianBlur(image, (5, 5), 1.4)
+
+# 对平滑后的图像进行Prewitt梯度运算
+grad_x_smooth = cv2.filter2D(smoothed_image, -1, prewitt_x)
+grad_y_smooth = cv2.filter2D(smoothed_image, -1, prewitt_y)
+
+# 计算平滑后图像的梯度幅值
+grad_magnitude_smooth = cv2.magnitude(grad_x_smooth, grad_y_smooth)
+
